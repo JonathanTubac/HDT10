@@ -1,0 +1,7 @@
+Quetzaltenango Quiché 20 15 3 8
+Guatemala Quetzaltenango 40 60 90 120
+Guatemala Escuintla 30 35 50 80
+Escuintla Retalhuleu 25 30 40 60
+Retalhuleu Quiché 50 60 90 150
+Guatemala Petén 100 120 180 300
+Petén Quiché 90 100 140 200
