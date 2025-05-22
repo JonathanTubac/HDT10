@@ -1,0 +1,47 @@
+import unittest
+import math
+import sys
+from matriz import Logistica
+
+class TestLogistica(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.sistema = Logistica()
+        cls.sistema.cargarDatos('logistica.txt')  # Asegurar que el archivo de datos exista
+    
+    def test_carga_datos(self):
+        """Verifica la carga correcta de ciudades"""
+        self.assertGreater(len(self.sistema.ciudades), 0)
+        self.assertEqual(len(self.sistema.ciudades), len(self.sistema.indice))
+    
+    def test_ruta_base(self):
+        """Prueba ruta entre ciudades conectadas directamente"""
+        tiempo, ruta = self.sistema.obtener_ruta('Quetzaltenango', 'Quiché')
+        self.assertLess(tiempo, math.inf)
+        self.assertEqual(len(ruta), 2)
+    
+    def test_centro_grafo(self):
+        """Verifica que el centro del grafo sea consistente"""
+        centro = self.sistema.centro_del_grafo()
+        self.assertIn(centro, self.sistema.ciudades)
+    
+    def test_modificacion_grafo(self):
+        """Prueba eliminación y restauración de conexión"""
+        # Almacenar valor original
+        idx1 = self.sistema.indice['Guatemala']
+        idx2 = self.sistema.indice['Escuintla']
+        original = self.sistema.tiempo['normal'][idx1][idx2]
+        
+        # Modificar
+        for clima in self.sistema.tiempo:
+            self.sistema.tiempo[clima][idx1][idx2] = math.inf
+        
+        # Verificar cambio
+        self.assertEqual(self.sistema.tiempo['normal'][idx1][idx2], math.inf)
+        
+        # Restaurar
+        for clima in self.sistema.tiempo:
+            self.sistema.tiempo[clima][idx1][idx2] = original
+
+if __name__ == '__main__':
+    unittest.main()
