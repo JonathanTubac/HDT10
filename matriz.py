@@ -1,7 +1,7 @@
 """
     Hoja de Trabajo 10 - Algoritmos y Estructuras de Datos
     Carlos López - 24531
-    Jonathan Tubac - 24...
+    Jonathan Tubac - 24484
 """
 
 import sys
@@ -73,7 +73,47 @@ class Logistica:
                 for i, elemento in enumerate(fila)
             )
             print(linea_formateada)
+    def floyd(self):
+        n = len(self.ciudades)
+        matriz = self.tiempo[self.t_actual]
+        self.dist = [row[:] for row in matriz]
+        self.next = [[None if matriz[i][j] == INF else j for j in range(n)] for i in range(n)]
 
+        for k in range(n):
+            for i in range(n):
+                for j in range(n):
+                    if self.dist[i][k] + self.dist[k][j] < self.dist[i][j]:
+                        self.dist[i][j] = self.dist[i][k] + self.dist[k][j]
+                        self.next[i][j] = self.next[i][k]
+           
+    def centro_del_grafo(self):
+        if self.dist is None:
+            self.floyd()
+
+        excentricidades = [max(fila) for fila in self.dist]
+        min_ex = min(excentricidades)
+        centro = self.ciudades[excentricidades.index(min_ex)]
+        return centro
+
+    def obtener_ruta(self, origen, destino):
+        if self.dist is None or self.next is None:
+            self.floyd()
+
+        i = self.indice.get(origen)
+        j = self.indice.get(destino)
+        if i is None or j is None:
+            return None, []
+
+        if self.next[i][j] is None:
+            return INF, []
+
+        ruta = [origen]
+        while i != j:
+            i = self.next[i][j]
+            ruta.append(self.ciudades[i])
+        
+        return self.dist[self.indice[origen]][self.indice[destino]], ruta
+    
 def main():
     net = Logistica()
     try:
@@ -94,7 +134,58 @@ def main():
         
         opcion = input("Seleccione una opción: ")
         if opcion == '1':
-            print("hola")
+            origen = input("Ciudad de origen: ").strip()
+            destino = input("Ciudad de destino: ").strip()
+            distancia, ruta = net.obtener_ruta(origen, destino)
+            if distancia == INF:
+                print("No hay ruta disponible entre esas ciudades.")
+            else:
+                print(f"Ruta más corta ({net.t_actual}): {' -> '.join(ruta)}")
+                print(f"Tiempo total: {distancia:.2f} horas")
+        elif opcion == '2':
+            centro = net.centro_del_grafo()
+            print(f"La ciudad centro del grafo es: {centro}")
+        elif opcion == '3':
+            print("1. Eliminar conexión entre ciudades")
+            print("2. Agregar conexión nueva")
+            print("3. Cambiar el tipo de clima actual")
+            subop = input("Elija una opción: ")
+
+            if subop == '1':
+                c1 = input("Ciudad 1: ").strip()
+                c2 = input("Ciudad 2: ").strip()
+                if c1 in net.indice and c2 in net.indice:
+                    for clima in net.tiempo:
+                        i, j = net.indice[c1], net.indice[c2]
+                        net.tiempo[clima][i][j] = INF
+                        net.tiempo[clima][j][i] = INF
+                    print("Conexión eliminada.")
+                else:
+                    print("Ciudades inválidas.")
+
+            elif subop == '2':
+                c1 = input("Ciudad 1: ").strip()
+                c2 = input("Ciudad 2: ").strip()
+                tiempos = []
+                for clima in ['normal', 'lluvia', 'nieve', 'tormenta']:
+                    t = float(input(f"Tiempo con {clima}: "))
+                    tiempos.append(t)
+                for i, clima in enumerate(['normal', 'lluvia', 'nieve', 'tormenta']):
+                    i1, i2 = net.indice[c1], net.indice[c2]
+                    net.tiempo[clima][i1][i2] = tiempos[i]
+                    net.tiempo[clima][i2][i1] = tiempos[i]
+                print("Conexión añadida.")
+
+            elif subop == '3':
+                clima = input("Clima actual (normal, lluvia, nieve, tormenta): ").strip().lower()
+                if clima in ['normal', 'lluvia', 'nieve', 'tormenta']:
+                    net.t_actual = clima
+                    print(f"Clima actualizado a: {clima}")
+                else:
+                    print("Tipo de clima inválido.")
+
+                net.floyd()  # Recalcular distancias
+
         elif opcion == '4':
             print("Mostrando matriz de distancias")
             net.mostrar_matriz()
